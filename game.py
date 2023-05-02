@@ -9,7 +9,7 @@ class MinesweeperGUI:
         self.rows = rows
         self.cols = cols
         self.mines = mines
-        self.photos = self.images()
+        self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2], self.random_image_numbers()[3])
         self.grid = [[0 for c in range(cols)] for r in range(rows)]
         self.cells = [[None for c in range(cols)] for r in range(rows)]
         self.visible = [[False for c in range(cols)] for r in range(rows)]
@@ -30,18 +30,27 @@ class MinesweeperGUI:
     def on_left_click(self, row, col, event):
         if self.cells[row][col].cget('state') != 'disabled':
             if not self.winning() or self.fail:
+                ###################
                 self.reset_button.config(image=self.photos['oops'])
 
     def on_button_release(self, row, col, event):
         if not self.winning() or self.fail:
             self.reset_button.config(image=self.photos['reg'])
+
+    def random_image_numbers(self):
+        rand_num_reg = random.randint(1, 4)
+        rand_num_oops = random.randint(1, 5)
+        rand_num_die = random.randint(1, 5)
+        rand_num_win = random.randint(1, 2)
+        return [rand_num_reg, rand_num_oops, rand_num_die, rand_num_win]
     
 
-    def images(self):
-        reg = tk.PhotoImage(file = r"C:\Users\1\GitHub\Minesweeper-game\pics\reg2.png").subsample(2)
-        oops = tk.PhotoImage(file = r"C:\Users\1\GitHub\Minesweeper-game\pics\oops2.png").subsample(2)
-        die = tk.PhotoImage(file = r"C:\Users\1\GitHub\Minesweeper-game\pics\die3.png").subsample(2)
-        win = tk.PhotoImage(file = r"C:\Users\1\GitHub\Minesweeper-game\pics\win1.png").subsample(2)
+    def images(self, rand_num_reg, rand_num_oops, rand_num_die, rand_num_win):
+
+        reg = tk.PhotoImage(file = rf"C:\Users\1\GitHub\Minesweeper-game\pics\reg{rand_num_reg}.png").subsample(2)
+        oops = tk.PhotoImage(file = rf"C:\Users\1\GitHub\Minesweeper-game\pics\oops{2}.png").subsample(2)
+        die = tk.PhotoImage(file = rf"C:\Users\1\GitHub\Minesweeper-game\pics\die{rand_num_die}.png").subsample(2)
+        win = tk.PhotoImage(file = rf"C:\Users\1\GitHub\Minesweeper-game\pics\win{rand_num_win}.png").subsample(2)
 
         pics = {'reg':reg, 'oops':oops, 'die': die, 'win': win}
         return pics
@@ -191,15 +200,24 @@ class MinesweeperGUI:
 
 
     def reveal_cell(self, row, col):
-        if not self.visible[row][col] and self.cells[row][col]["text"] != "F":
-            self.visible[row][col] = True
-            if self.grid[row][col] == 0:
-                for r in range(row - 1, row + 2):
-                    for c in range(col - 1, col + 2):
-                        if r >= 0 and r < self.rows and c >= 0 and c < self.cols:
-                            self.reveal_cell(r, c)
-            elif self.grid[row][col] == -1:
-                self.defeat(row, col)
+        stack = [(row, col)]
+
+        while stack:
+            r, c = stack.pop()
+
+            if not self.visible[r][c] and self.cells[r][c]["text"] != "F":
+                self.visible[r][c] = True
+                self.cells[r][c].config(state='disabled', fg='black')
+
+                if self.grid[r][c] == 0:
+                    for i, j in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, 1), (-1, -1), (1, -1), (1, 1)):
+                        nr, nc = r + i, c + j
+                        if (0 <= nr < self.rows) and (0 <= nc < self.cols) and not(self.visible[nr][nc]) and not((nr, nc) in stack):
+                            stack.append((nr, nc))
+
+                elif self.grid[r][c] == -1:
+                    self.defeat(r, c)
+
         self.update_cells()
 
     def unflag_mine(self, row, col):
@@ -260,6 +278,8 @@ class MinesweeperGUI:
         self.generate_mines()
         self.update_grid()
         self.reset_cells()
+        #makes new random smiley faces every game
+        self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2], self.random_image_numbers()[3])
         self.reset_button.configure(image=self.photos['reg'])
         self.fail = False
 
@@ -283,7 +303,7 @@ class MinesweeperGUI:
 if __name__ == "__main__":
     rows = 7
     cols = 7
-    mines = 3
+    mines = 4
     root = tk.Tk()
     root.title("Minesweeper")
     game = MinesweeperGUI(root, rows, cols, mines)

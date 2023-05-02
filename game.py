@@ -76,7 +76,7 @@ class MinesweeperGUI:
 
                 # add the button to the list of cells
                 self.cells[row][col] = cell
-
+                
                 self.widget_colorize_cell(row, col)
 
     def widget_colorize_cell(self, row, col):
@@ -98,7 +98,7 @@ class MinesweeperGUI:
         if self.grid[row][col] == 6:
             cell.config(fg='cyan', disabledforeground='cyan')
         if self.grid[row][col] == 7:
-            cell.config(fg='dark brown', disabledforeground='dark brown')
+            cell.config(fg='brown', disabledforeground='brown')
         if self.grid[row][col] == 8:
             cell.config(fg='black', disabledforeground='black')                     
 
@@ -160,15 +160,24 @@ class MinesweeperGUI:
 
 
     def reveal_cell(self, row, col):
-        if not self.visible[row][col] and self.cells[row][col]["text"] != "F":
-            self.visible[row][col] = True
-            if self.grid[row][col] == 0:
-                for r in range(row - 1, row + 2):
-                    for c in range(col - 1, col + 2):
-                        if r >= 0 and r < self.rows and c >= 0 and c < self.cols:
-                            self.reveal_cell(r, c)
-            elif self.grid[row][col] == -1:
-                self.defeat(row, col)
+        stack = [(row, col)]
+
+        while stack:
+            r, c = stack.pop()
+
+            if not self.visible[r][c] and self.cells[r][c]["text"] != "F":
+                self.visible[r][c] = True
+                self.cells[r][c].config(state='disabled', fg='black')
+
+                if self.grid[r][c] == 0:
+                    for i, j in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, 1), (-1, -1), (1, -1), (1, 1)):
+                        nr, nc = r + i, c + j
+                        if (0 <= nr < self.rows) and (0 <= nc < self.cols) and not(self.visible[nr][nc]) and not((nr, nc) in stack):
+                            stack.append((nr, nc))
+
+                elif self.grid[r][c] == -1:
+                    self.defeat(r, c)
+
         self.update_cells()
 
     def unflag_mine(self, row, col):
@@ -241,7 +250,7 @@ class MinesweeperGUI:
 if __name__ == "__main__":
     rows = 10
     cols = 10
-    mines = 9
+    mines = 2
     root = tk.Tk()
     root.title("Minesweeper")
     game = MinesweeperGUI(root, rows, cols, mines)

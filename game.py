@@ -1,15 +1,15 @@
 import tkinter as tk
 import random
-import time
 import os
 base_dir = os.path.dirname(__file__)
 
 class MinesweeperGUI:
-    def __init__(self, master, rows, cols, mines):
+    def __init__(self, master, rows=10, cols=10, dificulty="medium"):
         self.master = master
         self.rows = rows
         self.cols = cols
-        self.mines = mines
+        self.dificulty = dificulty
+        self.mines = self.amount_of_mines()
         self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2])
         self.grid = [[0 for c in range(cols)] for r in range(rows)]
         self.cells = [[None for c in range(cols)] for r in range(rows)]
@@ -61,6 +61,16 @@ class MinesweeperGUI:
         pics = {'reg':reg, 'die': die, 'win': win}
         return pics
     
+    #choosing game difficulty
+    def amount_of_mines(self):
+        if self.dificulty == "easy":
+            return int(self.cols*self.rows*0.1)
+        if self.dificulty == "medium":
+            return int(self.cols*self.rows*0.3)
+        if self.dificulty == "hard":
+            return int(self.cols*self.rows*0.5)
+        if self.dificulty == "hell":
+            return int(self.cols*self.rows*0.9)
 
     def generate_mines(self):
         mines_placed = 0
@@ -143,7 +153,7 @@ class MinesweeperGUI:
         if self.grid[row][col] == 6:
             cell.config(fg='cyan', disabledforeground='cyan')
         if self.grid[row][col] == 7:
-            cell.config(fg='dark brown', disabledforeground='dark brown')
+            cell.config(fg='brown', disabledforeground='brown')
         if self.grid[row][col] == 8:
             cell.config(fg='black', disabledforeground='black')                     
 
@@ -312,9 +322,8 @@ class MinesweeperGUI:
 if __name__ == "__main__":
     rows = 7
     cols = 7
-    mines = 4
     root = tk.Tk()
     root.title("Minesweeper")
-    game = MinesweeperGUI(root, rows, cols, mines)
+    game = MinesweeperGUI(root, rows, cols)
     game.play()
     

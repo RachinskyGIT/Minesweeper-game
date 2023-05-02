@@ -1,7 +1,8 @@
 import tkinter as tk
 import random
-
-
+import time
+import os
+base_dir = os.path.dirname(__file__)
 
 class MinesweeperGUI:
     def __init__(self, master, rows, cols, mines):
@@ -9,7 +10,7 @@ class MinesweeperGUI:
         self.rows = rows
         self.cols = cols
         self.mines = mines
-        self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2], self.random_image_numbers()[3])
+        self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2])
         self.grid = [[0 for c in range(cols)] for r in range(rows)]
         self.cells = [[None for c in range(cols)] for r in range(rows)]
         self.visible = [[False for c in range(cols)] for r in range(rows)]
@@ -20,40 +21,46 @@ class MinesweeperGUI:
         self.create_widgets()
         self.fail = False
 
-        #change oops face when clicking algorithm
+        #"change oops face when clicking"-set
         for r in range(self.rows):
             for c in range(self.cols):
                 button = self.cells[r][c]
                 button.bind('<Button-1>', lambda event, row=r, col=c: self.on_left_click(row, col, event))
                 button.bind("<ButtonRelease-1>", lambda event, row=r, col=c: self.on_button_release(row, col, event))
 
+    #function for setting oops face when stepping to cell
     def on_left_click(self, row, col, event):
         if self.cells[row][col].cget('state') != 'disabled':
             if not self.winning() or self.fail:
-                ###################
-                self.reset_button.config(image=self.photos['oops'])
+                self.oops_img = tk.PhotoImage(file = rf"{base_dir}\pics\oops{random.randint(1, 5)}.png").subsample(2)
+                self.reset_button.config(image=self.oops_img)
+                
 
+    #function for setting regular face when un-stepping from cell
     def on_button_release(self, row, col, event):
-        if not self.winning() or self.fail:
-            self.reset_button.config(image=self.photos['reg'])
+        if not (self.winning() or self.fail):
 
+            #This command puts a normal muzzle only after 0.3 seconds of showing the oops muzzle. 
+            # Therefore, victory and defeat faces are placed only 0.3001 seconds after the 
+            # victory or defeat itself, in order to be placed after the oops face, and not before.
+            root.after(300, lambda: self.reset_button.config(image=self.photos['reg']))
+            # self.reset_button.config(image=self.photos['reg'])
+    
+    #that function makes random image numbers every new game
     def random_image_numbers(self):
         rand_num_reg = random.randint(1, 4)
-        rand_num_oops = random.randint(1, 5)
         rand_num_die = random.randint(1, 5)
         rand_num_win = random.randint(1, 2)
-        return [rand_num_reg, rand_num_oops, rand_num_die, rand_num_win]
-    
+        return [rand_num_reg, rand_num_die, rand_num_win]
 
-    def images(self, rand_num_reg, rand_num_oops, rand_num_die, rand_num_win):
-
-        reg = tk.PhotoImage(file = rf"C:\Users\1\GitHub\Minesweeper-game\pics\reg{rand_num_reg}.png").subsample(2)
-        oops = tk.PhotoImage(file = rf"C:\Users\1\GitHub\Minesweeper-game\pics\oops{2}.png").subsample(2)
-        die = tk.PhotoImage(file = rf"C:\Users\1\GitHub\Minesweeper-game\pics\die{rand_num_die}.png").subsample(2)
-        win = tk.PhotoImage(file = rf"C:\Users\1\GitHub\Minesweeper-game\pics\win{rand_num_win}.png").subsample(2)
-
-        pics = {'reg':reg, 'oops':oops, 'die': die, 'win': win}
+    #function that chooses which files will be smiley faces images
+    def images(self, rand_num_reg, rand_num_die, rand_num_win):
+        reg = tk.PhotoImage(file = rf"{base_dir}\pics\reg{rand_num_reg}.png").subsample(2)
+        die = tk.PhotoImage(file = rf"{base_dir}\pics\die{rand_num_die}.png").subsample(2)
+        win = tk.PhotoImage(file = rf"{base_dir}\pics\win{rand_num_win}.png").subsample(2)
+        pics = {'reg':reg, 'die': die, 'win': win}
         return pics
+    
 
     def generate_mines(self):
         mines_placed = 0
@@ -171,12 +178,13 @@ class MinesweeperGUI:
         # checks if all the revealed cells is non-mines:
         for r in range(self.rows):
             for c in range(self.cols):
-                if self.visible[r][c] == True:
+                if (self.visible[r][c] == True) and (self.grid[r][c] != -1):
                     self.count_visible +=1
         # if visible cells there are only non-mines cells - victory
         if self.count_visible == (self.rows*self.cols - self.mines):
             self.mine_counter_label.config(text=f"You WON!")
-            self.reset_button.configure(image=self.photos['win'])
+            root.after(301, lambda: self.reset_button.configure(image=self.photos['win']))
+            # self.reset_button.configure(image=self.photos['win'])
             for r in range(self.rows):
                 for c in range(self.cols):
                     self.cells[r][c].config(state='disabled', fg='black') #blocks cells buttons after win
@@ -188,7 +196,8 @@ class MinesweeperGUI:
 
     def defeat(self, r, c):
         self.mine_counter_label.config(text=f"Boom!!") #changes mine counter to "boom" after boom
-        self.reset_button.configure(image=self.photos['die'])
+        root.after(301, lambda: self.reset_button.configure(image=self.photos['die']))
+        # self.reset_button.configure(image=self.photos['die'])
         for r in range(self.rows):
             for c in range(self.cols):
                 self.cells[r][c].config(state='disabled', fg='black') #blocks cells buttons after boom
@@ -279,7 +288,7 @@ class MinesweeperGUI:
         self.update_grid()
         self.reset_cells()
         #makes new random smiley faces every game
-        self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2], self.random_image_numbers()[3])
+        self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2])
         self.reset_button.configure(image=self.photos['reg'])
         self.fail = False
 

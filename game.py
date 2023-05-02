@@ -2,12 +2,14 @@ import tkinter as tk
 import random
 
 
+
 class MinesweeperGUI:
     def __init__(self, master, rows, cols, mines):
         self.master = master
         self.rows = rows
         self.cols = cols
         self.mines = mines
+        self.photos = self.images()
         self.grid = [[0 for c in range(cols)] for r in range(rows)]
         self.cells = [[None for c in range(cols)] for r in range(rows)]
         self.visible = [[False for c in range(cols)] for r in range(rows)]
@@ -17,6 +19,32 @@ class MinesweeperGUI:
         self.update_grid()
         self.create_widgets()
         self.fail = False
+
+        #change oops face when clicking algorithm
+        for r in range(self.rows):
+            for c in range(self.cols):
+                button = self.cells[r][c]
+                button.bind('<Button-1>', lambda event, row=r, col=c: self.on_left_click(row, col, event))
+                button.bind("<ButtonRelease-1>", lambda event, row=r, col=c: self.on_button_release(row, col, event))
+
+    def on_left_click(self, row, col, event):
+        if self.cells[row][col].cget('state') != 'disabled':
+            if not self.winning() or self.fail:
+                self.reset_button.config(image=self.photos['oops'])
+
+    def on_button_release(self, row, col, event):
+        if not self.winning() or self.fail:
+            self.reset_button.config(image=self.photos['reg'])
+    
+
+    def images(self):
+        reg = tk.PhotoImage(file = r"C:\Users\1\GitHub\Minesweeper-game\pics\reg2.png").subsample(2)
+        oops = tk.PhotoImage(file = r"C:\Users\1\GitHub\Minesweeper-game\pics\oops2.png").subsample(2)
+        die = tk.PhotoImage(file = r"C:\Users\1\GitHub\Minesweeper-game\pics\die3.png").subsample(2)
+        win = tk.PhotoImage(file = r"C:\Users\1\GitHub\Minesweeper-game\pics\win1.png").subsample(2)
+
+        pics = {'reg':reg, 'oops':oops, 'die': die, 'win': win}
+        return pics
 
     def generate_mines(self):
         mines_placed = 0
@@ -76,8 +104,9 @@ class MinesweeperGUI:
 
                 # add the button to the list of cells
                 self.cells[row][col] = cell
-
+                #colorize cells
                 self.widget_colorize_cell(row, col)
+   
 
     def widget_colorize_cell(self, row, col):
         cell = self.cells[row][col]
@@ -90,7 +119,7 @@ class MinesweeperGUI:
         if self.grid[row][col] == 2:
             cell.config(fg='green', disabledforeground='green')
         if self.grid[row][col] == 3:
-            cell.config(fg='red', disabledforeground='red')        
+            cell.config(fg='red', disabledforeground='red')         
         if self.grid[row][col] == 4:
             cell.config(fg='dark blue', disabledforeground='dark blue')
         if self.grid[row][col] == 5:
@@ -112,7 +141,7 @@ class MinesweeperGUI:
         self.mine_counter_label.pack(side=tk.LEFT)
 
     def widget_reset_button(self):
-        self.reset_button = tk.Button(self.menu, text="Reset", command=self.reset_game)
+        self.reset_button = tk.Button(self.menu, text='Reset', image = self.photos['reg'], command=self.reset_game)
         self.reset_button.pack(side=tk.LEFT, padx=10)
 
     def widget_timer(self):
@@ -138,6 +167,7 @@ class MinesweeperGUI:
         # if visible cells there are only non-mines cells - victory
         if self.count_visible == (self.rows*self.cols - self.mines):
             self.mine_counter_label.config(text=f"You WON!")
+            self.reset_button.configure(image=self.photos['win'])
             for r in range(self.rows):
                 for c in range(self.cols):
                     self.cells[r][c].config(state='disabled', fg='black') #blocks cells buttons after win
@@ -149,6 +179,7 @@ class MinesweeperGUI:
 
     def defeat(self, r, c):
         self.mine_counter_label.config(text=f"Boom!!") #changes mine counter to "boom" after boom
+        self.reset_button.configure(image=self.photos['die'])
         for r in range(self.rows):
             for c in range(self.cols):
                 self.cells[r][c].config(state='disabled', fg='black') #blocks cells buttons after boom
@@ -186,17 +217,27 @@ class MinesweeperGUI:
                         self.mines_remaining -= 1
                         self.update_mine_counter()
 
-
+    #checks after every turn
     def update_cells(self):
+        #check after every turn if it is winning
         self.winning()
+        #actions with cells after each action
         for row in range(self.rows):
             for col in range(self.cols):
+                #what to do if cell is visible
                 if self.visible[row][col]:
+                    #marking cell when cell is a mine
                     if self.grid[row][col] == -1:
-                        self.cells[row][col].config(text="*",disabledforeground="black", bg="red",font=("bold"))
+                        if self.cells[row][col]["text"] == "F":
+                            self.cells[row][col].config(text="X",disabledforeground="black", bg="green",font=("bold"))
+                        else:
+                            self.cells[row][col].config(text="*",disabledforeground="black", bg="red",font=("bold"))
+                    #what to do if cell is visible and not a mine
                     else:
-                        self.cells[row][col].config(text=str(self.grid[row][col]), bg="light grey")
+                        self.cells[row][col].config(text=str(self.grid[row][col]), bg="light grey", state='disabled')
+                #what to do if cell is not visible
                 else:
+                    #re-colorizing flags every turn
                     if self.cells[row][col]["text"] == "F":
                         self.cells[row][col].config(text="F", bg="grey", disabledforeground="black")
                     elif self.grid[row][col] == -1 and self.winning():
@@ -207,8 +248,8 @@ class MinesweeperGUI:
     def reset_cells(self):
         for row in range(self.rows):
             for col in range(self.cols):
-                self.cells[row][col].config(text="", bg="grey")
                 self.widget_colorize_cell(row, col)
+                self.cells[row][col].config(text="", bg="grey")
                 self.cells[row][col].config(state='normal')
         self.mines_remaining = self.mines
         self.update_mine_counter()
@@ -219,6 +260,7 @@ class MinesweeperGUI:
         self.generate_mines()
         self.update_grid()
         self.reset_cells()
+        self.reset_button.configure(image=self.photos['reg'])
         self.fail = False
 
         if self.timer_id is not None:
@@ -239,9 +281,9 @@ class MinesweeperGUI:
 
 
 if __name__ == "__main__":
-    rows = 10
-    cols = 10
-    mines = 9
+    rows = 7
+    cols = 7
+    mines = 3
     root = tk.Tk()
     root.title("Minesweeper")
     game = MinesweeperGUI(root, rows, cols, mines)

@@ -21,15 +21,8 @@ class MinesweeperGUI:
         self.update_grid()
         self.create_widgets()
         self.fail = False
+        self.oops_face_widget()
     
-
-        #"change oops face when clicking"-set
-        for r in range(self.rows):
-            for c in range(self.cols):
-                button = self.cells[r][c]
-                button.bind('<Button-1>', lambda event, row=r, col=c: self.on_left_click(row, col, event))
-                button.bind("<ButtonRelease-1>", lambda event, row=r, col=c: self.on_button_release(row, col, event))
-
     def row_col_generation(self):
         if self.size == "small":
             self.rows, self.cols = 10, 10
@@ -37,16 +30,21 @@ class MinesweeperGUI:
             self.rows, self.cols = 15, 15
         else:
             self.rows, self.cols = 20, 20
+            
+    #"change oops face when clicking"-set
+    def oops_face_widget(self):
+        for r in range(self.rows):
+            for c in range(self.cols):
+                button = self.cells[r][c]
+                button.bind('<Button-1>', lambda event, row=r, col=c: self.on_left_click(row, col))
+                button.bind("<ButtonRelease-1>", lambda event, row=r, col=c: self.on_button_release(row, col, event))
 
     #function for setting oops face when stepping to cell
-    def on_left_click(self, row, col, event):
+    def on_left_click(self, row, col):
         if self.cells[row][col].cget('state') != 'disabled':
             if not self.winning() or self.fail:
                 self.oops_img = tk.PhotoImage(file = rf"{base_dir}\pics\oops{random.randint(1, 5)}.png").subsample(2)
-                self.reset_button.config(image=self.oops_img)
-
-        # self.current_cell = (self.reveal_cell(row, col))
-                
+                self.reset_button.config(image=self.oops_img)              
 
     #function for setting regular face when un-stepping from cell
     def on_button_release(self, row, col, event):
@@ -185,6 +183,7 @@ class MinesweeperGUI:
     def size_button(self, size):
         self.size = size
         self.reset_board()
+        self.oops_face_widget()
 
     def widget_dificulty(self):
         dificulty_menu = tk.Menu(self.menu_bar, tearoff=0)

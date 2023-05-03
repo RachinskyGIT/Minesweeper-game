@@ -4,12 +4,12 @@ import os
 base_dir = os.path.dirname(__file__)
 
 class MinesweeperGUI:
-    def __init__(self, master, size="small", dificulty="easy"):
+    def __init__(self, master, size="small", difficulty="easy"):
         self.master = master
         self.master.config(bg="khaki")
         self.size = size
         self.row_col_generation()
-        self.dificulty = dificulty
+        self.difficulty = difficulty
         self.mines = self.amount_of_mines()
         self.photos = self.images(*self.random_image_numbers())
         self.grid = [[0 for c in range(self.cols)] for r in range(self.rows)]
@@ -28,9 +28,11 @@ class MinesweeperGUI:
             self.rows, self.cols = 10, 10
         elif self.size == "medium":
             self.rows, self.cols = 15, 15
-        else:
+        elif self.size == "big":
             self.rows, self.cols = 20, 20
-            
+        elif self.size == "huge":
+            self.rows, self.cols = 20, 40
+
     #"change oops face when clicking"-set
     def oops_face_widget(self):
         for r in range(self.rows):
@@ -97,15 +99,23 @@ class MinesweeperGUI:
 
     #choosing game difficulty
     def amount_of_mines(self):
-        if self.dificulty == "easy":
+        if self.difficulty == "where to click?":
+            return int(self.cols*self.rows*0.05)
+        if self.difficulty == "easy":
             return int(self.cols*self.rows*0.1)
-        if self.dificulty == "medium":
+        if self.difficulty == "semi-medium":
+            return int(self.cols*self.rows*0.15)
+        if self.difficulty == "medium":
             return int(self.cols*self.rows*0.2)
-        if self.dificulty == "hard":
+        if self.difficulty == "semi-hard":
             return int(self.cols*self.rows*0.3)
-        if self.dificulty == "hell":
+        if self.difficulty == "hard":
+            return int(self.cols*self.rows*0.3)
+        if self.difficulty == "tough":
+            return int(self.cols*self.rows*0.4)
+        if self.difficulty == "hell":
             return int(self.cols*self.rows*0.6)
-        if self.dificulty == "pure luck":
+        if self.difficulty == "pure luck":
             return int(self.cols*self.rows*0.95)
 
     def generate_mines(self):
@@ -139,8 +149,8 @@ class MinesweeperGUI:
         # create menu bar
         self.menu_bar = tk.Menu(self.master, bg="khaki")
 
-        # create dificulty dropdown widget
-        self.widget_dificulty()
+        # create difficulty dropdown widget
+        self.widget_difficulty()
 
         # create size dropdown
         self.widget_size()
@@ -174,7 +184,7 @@ class MinesweeperGUI:
 
     def widget_size(self):
         size_menu = tk.Menu(self.menu_bar, tearoff=0)
-        sizes = ["small", "medium", "big"]
+        sizes = ["small", "medium", "big", "huge"]
         for size in sizes:
             size_menu.add_command(label=size, command=lambda s=size: self.size_button(s))
 
@@ -185,16 +195,19 @@ class MinesweeperGUI:
         self.reset_board()
         self.oops_face_widget()
 
-    def widget_dificulty(self):
-        dificulty_menu = tk.Menu(self.menu_bar, tearoff=0)
-        dificulties = ["easy", "medium", "hard", "hell", "pure luck"]
-        for dificulty in dificulties:
-            dificulty_menu.add_command(label=dificulty, command=lambda d=dificulty: self.dificulty_button(d))
+    def widget_difficulty(self):
+        difficulty_menu = tk.Menu(self.menu_bar, tearoff=0)
+        difficulties = ["where to click?", "easy", "semi-medium", "medium", "semi-hard",\
+                        "hard", "tough", "hell", "pure luck"]
+        self.difficulty_var = tk.StringVar(value=difficulties[0])
+        for difficulty in difficulties:
+            difficulty_menu.add_command(label=difficulty, command=lambda d=difficulty: self.difficulty_button(d))
 
-        self.menu_bar.add_cascade(label="Dificulty", menu=dificulty_menu)
+        self.menu_bar.add_cascade(label="Difficulty", menu=difficulty_menu)
     
-    def dificulty_button(self, dificulty):
-        self.dificulty = dificulty
+    def difficulty_button(self, difficulty):
+        self.difficulty_var.set(difficulty)
+        self.difficulty = difficulty
         self.reset_game()
 
 

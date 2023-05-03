@@ -4,16 +4,17 @@ import os
 base_dir = os.path.dirname(__file__)
 
 class MinesweeperGUI:
-    def __init__(self, master, rows=10, cols=10, dificulty="medium"):
+    def __init__(self, master, size="small", dificulty="easy"):
         self.master = master
-        self.rows = rows
-        self.cols = cols
+        self.size = size
+        self.row_col_generation()
         self.dificulty = dificulty
         self.mines = self.amount_of_mines()
         self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2])
-        self.grid = [[0 for c in range(cols)] for r in range(rows)]
-        self.cells = [[None for c in range(cols)] for r in range(rows)]
-        self.visible = [[False for c in range(cols)] for r in range(rows)]
+
+        self.grid = [[0 for c in range(self.cols)] for r in range(self.rows)]
+        self.cells = [[None for c in range(self.cols)] for r in range(self.rows)]
+        self.visible = [[False for c in range(self.cols)] for r in range(self.rows)]
         self.count_visible = 0
         self.time_elapsed = 0
         self.generate_mines()
@@ -27,6 +28,14 @@ class MinesweeperGUI:
                 button = self.cells[r][c]
                 button.bind('<Button-1>', lambda event, row=r, col=c: self.on_left_click(row, col, event))
                 button.bind("<ButtonRelease-1>", lambda event, row=r, col=c: self.on_button_release(row, col, event))
+
+    def row_col_generation(self):
+        if self.size == "small":
+            self.rows, self.cols = 10, 10
+        elif self.size == "medium":
+            self.rows, self.cols = 15, 15
+        else:
+            self.rows, self.cols = 20, 20
 
     #function for setting oops face when stepping to cell
     def on_left_click(self, row, col, event):
@@ -66,11 +75,13 @@ class MinesweeperGUI:
         if self.dificulty == "easy":
             return int(self.cols*self.rows*0.1)
         if self.dificulty == "medium":
-            return int(self.cols*self.rows*0.3)
+            return int(self.cols*self.rows*0.2)
         if self.dificulty == "hard":
-            return int(self.cols*self.rows*0.5)
+            return int(self.cols*self.rows*0.3)
         if self.dificulty == "hell":
-            return int(self.cols*self.rows*0.9)
+            return int(self.cols*self.rows*0.6)
+        if self.dificulty == "pure luck":
+            return int(self.cols*self.rows*0.95)
 
     def generate_mines(self):
         mines_placed = 0
@@ -100,13 +111,22 @@ class MinesweeperGUI:
 
 
     def create_widgets(self):
+        # create menu bar
+        self.menu_bar = tk.Menu(self.master)
+
+        # create dificulty dropdown widget
+        self.widget_dificulty()
+
+        # create size dropdown
+        self.widget_size()
+
         # create the menu frame
         self.menu = tk.Frame(self.master)
         self.menu.pack(pady=5)
 
         # create frame to contain the cells
         self.frame = tk.Frame(self.master)
-        self.frame.pack(pady=5)        
+        self.frame.pack(pady=5)
 
         # create cells
         self.widget_cells()
@@ -119,6 +139,38 @@ class MinesweeperGUI:
 
         # create timer
         self.widget_timer()
+
+        self.master.config(menu=self.menu_bar)
+
+    def delete_widgets(self):
+        self.menu.destroy()
+        self.frame.destroy()
+
+
+    def widget_size(self):
+        size_menu = tk.Menu(self.menu_bar, tearoff=0)
+        sizes = ["small", "medium", "big"]
+        for size in sizes:
+            size_menu.add_command(label=size, command=lambda s=size: self.size_button(s))
+
+        self.menu_bar.add_cascade(label="Size", menu=size_menu)
+
+    def size_button(self, size):
+        self.size = size
+        self.reset_board()
+
+    def widget_dificulty(self):
+        dificulty_menu = tk.Menu(self.menu_bar, tearoff=0)
+        dificulties = ["easy", "medium", "hard", "hell", "pure luck"]
+        for dificulty in dificulties:
+            dificulty_menu.add_command(label=dificulty, command=lambda d=dificulty: self.dificulty_button(d))
+
+        self.menu_bar.add_cascade(label="Dificulty", menu=dificulty_menu)
+    
+    def dificulty_button(self, dificulty):
+        self.dificulty = dificulty
+        self.reset_game()
+
 
     def widget_cells(self):
         for row in range(self.rows):
@@ -291,7 +343,31 @@ class MinesweeperGUI:
         self.mines_remaining = self.mines
         self.update_mine_counter()
 
+    def reset_board(self):
+        self.row_col_generation()
+        self.mines = self.amount_of_mines()
+        self.grid = [[0 for c in range(self.cols)] for r in range(self.rows)]
+        self.cells = [[None for c in range(self.cols)] for r in range(self.rows)]
+        self.visible = [[False for c in range(self.cols)] for r in range(self.rows)]
+        self.generate_mines()
+        self.update_grid()
+        self.delete_widgets()
+        self.create_widgets()
+        #makes new random smiley faces every game
+        self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2])
+        self.reset_button.configure(image=self.photos['reg'])
+        self.fail = False
+
+        if self.timer_id is not None:
+            self.master.after_cancel(self.timer_id)
+            self.timer_id = None
+
+        self.time_elapsed = 0
+        self.timer_label.config(text="Time: 0")
+        self.start_timer()
+
     def reset_game(self):
+        self.mines = self.amount_of_mines()
         self.grid = [[0 for c in range(self.cols)] for r in range(self.rows)]
         self.visible = [[False for c in range(self.cols)] for r in range(self.rows)]
         self.generate_mines()
@@ -320,10 +396,8 @@ class MinesweeperGUI:
 
 
 if __name__ == "__main__":
-    rows = 7
-    cols = 7
     root = tk.Tk()
     root.title("Minesweeper")
-    game = MinesweeperGUI(root, rows, cols)
+    game = MinesweeperGUI(root)
     game.play()
     

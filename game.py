@@ -6,12 +6,12 @@ base_dir = os.path.dirname(__file__)
 class MinesweeperGUI:
     def __init__(self, master, size="small", dificulty="easy"):
         self.master = master
+        self.master.config(bg="khaki")
         self.size = size
         self.row_col_generation()
         self.dificulty = dificulty
         self.mines = self.amount_of_mines()
-        self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2])
-
+        self.photos = self.images(*self.random_image_numbers())
         self.grid = [[0 for c in range(self.cols)] for r in range(self.rows)]
         self.cells = [[None for c in range(self.cols)] for r in range(self.rows)]
         self.visible = [[False for c in range(self.cols)] for r in range(self.rows)]
@@ -21,6 +21,7 @@ class MinesweeperGUI:
         self.update_grid()
         self.create_widgets()
         self.fail = False
+    
 
         #"change oops face when clicking"-set
         for r in range(self.rows):
@@ -43,6 +44,8 @@ class MinesweeperGUI:
             if not self.winning() or self.fail:
                 self.oops_img = tk.PhotoImage(file = rf"{base_dir}\pics\oops{random.randint(1, 5)}.png").subsample(2)
                 self.reset_button.config(image=self.oops_img)
+
+        # self.current_cell = (self.reveal_cell(row, col))
                 
 
     #function for setting regular face when un-stepping from cell
@@ -70,32 +73,28 @@ class MinesweeperGUI:
         pics = {'reg':reg, 'die': die, 'win': win}
         return pics
     
-    #cells pictures - didn't realized yet
-    def cell_pics (self):     
-        cell_0 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{0}.png")
-        cell_1 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{1}.png")
-        cell_2 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{2}.png")
-        cell_3 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{3}.png")
-        cell_4 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{4}.png")
-        cell_5 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{5}.png")
-        cell_6 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{6}.png")
-        cell_7 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{7}.png")
-        cell_8 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{8}.png")
-        cell_unrevealed = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_unrevealed.png")
-        cell_flag = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_flag.png")
-        cell_question = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_question.png")
-        cell_mine = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_mine.png")
-        cell_redmine = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_redmine.png")
-        cell_crossedmine = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_crossedmine.png")
-        cells = {'cell_0':cell_0, 'cell_1':cell_1, 'cell_2':cell_2, 'cell_3':cell_3, 'cell_4':cell_4, 'cell_5':cell_5,\
-                'cell_6':cell_6, 'cell_7':cell_7, 'cell_8':cell_8, 'cell_unrevealed':cell_unrevealed,\
-                     'cell_flag':cell_flag, 'cell_question':cell_question, 'cell_mine':cell_mine,\
-                            'cell_redmine':cell_redmine, 'cell_crossedmine':cell_crossedmine}
-        return cells
-    
-
-
-
+    # #cells pictures - didn't realized yet
+    # def cell_pics (self):     
+    #     cell_0 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{0}.png")
+    #     cell_1 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{1}.png")
+    #     cell_2 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{2}.png")
+    #     cell_3 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{3}.png")
+    #     cell_4 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{4}.png")
+    #     cell_5 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{5}.png")
+    #     cell_6 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{6}.png")
+    #     cell_7 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{7}.png")
+    #     cell_8 = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_{8}.png")
+    #     cell_unrevealed = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_unrevealed.png")
+    #     cell_flag = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_flag.png")
+    #     cell_question = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_question.png")
+    #     cell_mine = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_mine.png")
+    #     cell_redmine = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_redmine.png")
+    #     cell_crossedmine = tk.PhotoImage(file = rf"{base_dir}\240x240\cell_crossedmine.png")
+    #     cells = {'cell_0':cell_0, 'cell_1':cell_1, 'cell_2':cell_2, 'cell_3':cell_3, 'cell_4':cell_4, 'cell_5':cell_5,\
+    #             'cell_6':cell_6, 'cell_7':cell_7, 'cell_8':cell_8, 'cell_unrevealed':cell_unrevealed,\
+    #                  'cell_flag':cell_flag, 'cell_question':cell_question, 'cell_mine':cell_mine,\
+    #                         'cell_redmine':cell_redmine, 'cell_crossedmine':cell_crossedmine}
+    #     return cells
 
 
     #choosing game difficulty
@@ -140,7 +139,7 @@ class MinesweeperGUI:
 
     def create_widgets(self):
         # create menu bar
-        self.menu_bar = tk.Menu(self.master)
+        self.menu_bar = tk.Menu(self.master, bg="khaki")
 
         # create dificulty dropdown widget
         self.widget_dificulty()
@@ -149,11 +148,11 @@ class MinesweeperGUI:
         self.widget_size()
 
         # create the menu frame
-        self.menu = tk.Frame(self.master)
+        self.menu = tk.Frame(self.master, bg="khaki")
         self.menu.pack(pady=5)
 
         # create frame to contain the cells
-        self.frame = tk.Frame(self.master)
+        self.frame = tk.Frame(self.master, bg="khaki")
         self.frame.pack(pady=5)
 
         # create cells
@@ -204,7 +203,7 @@ class MinesweeperGUI:
         for row in range(self.rows):
             for col in range(self.cols):
                 # create a cell button
-                cell = tk.Button(self.frame, width=2, height=1, command=lambda r=row, c=col: self.reveal_cell(r, c))
+                cell = tk.Button(self.frame, width=2, height=1, bg="grey", command=lambda r=row, c=col: self.reveal_cell(r, c))
                 cell.bind("<Button-3>", lambda event, r=row, c=col: self.unflag_mine(r, c))
                 cell.grid(row=row, column=col)
 
@@ -242,9 +241,9 @@ class MinesweeperGUI:
         self.mines_remaining = self.mines
         self.mine_counter_label = tk.Label(
             self.menu, text=f"{self.mines_remaining:03}",
-            font=("Arial", 14), bg="black", fg="red", width=8, height=1
+            font=("Arial", 20), bg="black", fg="red", width=8, height=1
         )
-        self.mine_counter_label.pack(side=tk.LEFT)
+        self.mine_counter_label.pack(side=tk.LEFT, padx= 10)
 
     def widget_reset_button(self):
         self.reset_button = tk.Button(self.menu, text='Reset', image = self.photos['reg'], command=self.reset_game)
@@ -252,10 +251,10 @@ class MinesweeperGUI:
 
     def widget_timer(self):
         self.timer_label = tk.Label(
-            self.menu, text=f"Time: {self.time_elapsed}", font=("Arial", 14),
+            self.menu, text=f"Time: {self.time_elapsed}", font=("Arial", 20),
             bg="black", fg="red", width=8, height=1
         )
-        self.timer_label.pack(side=tk.LEFT)
+        self.timer_label.pack(side=tk.LEFT, padx= 10)
 
     def start_timer(self):
         self.timer_label.config(text=f"Time: {self.time_elapsed}")
@@ -300,11 +299,10 @@ class MinesweeperGUI:
 
     def reveal_cell(self, row, col):
         stack = [(row, col)]
-
         while stack:
             r, c = stack.pop()
 
-            if not self.visible[r][c] and self.cells[r][c]["text"] != "F":
+            if not self.visible[r][c] and self.cells[r][c]["text"] != u"\U000026A0" and self.cells[r][c]["text"] != "?":
                 self.visible[r][c] = True
                 self.cells[r][c].config(state='disabled', fg='black')
 
@@ -316,20 +314,26 @@ class MinesweeperGUI:
 
                 elif self.grid[r][c] == -1:
                     self.defeat(r, c)
+        self.current_cell = (row,col)
 
         self.update_cells()
+
 
     def unflag_mine(self, row, col):
         if not self.winning():
             if not self.fail:
                 if not self.visible[row][col]: 
-                    if self.cells[row][col]["text"] == "F":
-                        self.widget_colorize_cell(row, col)
+                    if self.cells[row][col]["text"] == u"?":
+                        # self.widget_colorize_cell(row, col)
                         self.cells[row][col].config(text="", bg="grey")
+                        self.update_mine_counter()
+                    elif self.cells[row][col]["text"] == u"\U000026A0":
+                        # self.widget_colorize_cell(row, col)
+                        self.cells[row][col].config(text="?", bg="grey")
                         self.mines_remaining += 1
                         self.update_mine_counter()
                     else:
-                        self.cells[row][col].config(text="F", bg="grey")
+                        self.cells[row][col].config(text=u"\U000026A0", bg="grey")
                         self.cells[row][col].config(fg='black')
                         self.mines_remaining -= 1
                         self.update_mine_counter()
@@ -343,22 +347,26 @@ class MinesweeperGUI:
             for col in range(self.cols):
                 #what to do if cell is visible
                 if self.visible[row][col]:
-                    #marking cell when cell is a mine
+                    #marking cell when cell is a mine    
                     if self.grid[row][col] == -1:
-                        if self.cells[row][col]["text"] == "F":
-                            self.cells[row][col].config(text="X",disabledforeground="black", bg="green",font=("bold"))
+                        if self.cells[row][col]["text"] == u"\U000026A0":
+                            self.cells[row][col].config(text=u"\U000029BB",disabledforeground="black", bg="green",font=("bold"))
+                        elif (row == self.current_cell[0]) and (col == self.current_cell[1]):
+                            self.cells[row][col].config(text=u"\U00002620",disabledforeground="black", bg="red",font=("bold"))                        
                         else:
-                            self.cells[row][col].config(text="*",disabledforeground="black", bg="red",font=("bold"))
+                            self.cells[row][col].config(text=u"\U000026EF",disabledforeground="black", bg="red",font=("bold"))
                     #what to do if cell is visible and not a mine
                     else:
                         self.cells[row][col].config(text=str(self.grid[row][col]), bg="light grey", state='disabled')
                 #what to do if cell is not visible
                 else:
                     #re-colorizing flags every turn
-                    if self.cells[row][col]["text"] == "F":
-                        self.cells[row][col].config(text="F", bg="grey", disabledforeground="black")
+                    if self.cells[row][col]["text"] == u"\U000026A0":
+                        self.cells[row][col].config(text=u"\U000026A0", bg="grey", disabledforeground="black")
+                    elif self.cells[row][col]["text"] == "?":
+                        self.cells[row][col].config(text="?", bg="grey", disabledforeground="black")
                     elif self.grid[row][col] == -1 and self.winning():
-                        self.cells[row][col].config(text="F",disabledforeground="black", bg="grey",font=("bold"))
+                        self.cells[row][col].config(text=u"\U000026A0",disabledforeground="black", bg="grey",font=("bold"))
                     else:
                         self.cells[row][col].config(text="", bg="grey")
 
@@ -382,7 +390,7 @@ class MinesweeperGUI:
         self.delete_widgets()
         self.create_widgets()
         #makes new random smiley faces every game
-        self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2])
+        self.photos = self.images(*self.random_image_numbers())
         self.reset_button.configure(image=self.photos['reg'])
         self.fail = False
 
@@ -402,7 +410,7 @@ class MinesweeperGUI:
         self.update_grid()
         self.reset_cells()
         #makes new random smiley faces every game
-        self.photos = self.images(self.random_image_numbers()[0], self.random_image_numbers()[1], self.random_image_numbers()[2])
+        self.photos = self.images(*self.random_image_numbers())
         self.reset_button.configure(image=self.photos['reg'])
         self.fail = False
 
